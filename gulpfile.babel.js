@@ -34,12 +34,19 @@ let paths = {
   styl: resolveToApp('**/*.styl'), // stylesheets
   html: [
     resolveToApp('**/*.html'),
-    path.join(root, 'index.html')
+    path.join(root, 'index.html'),
+    path.join(root, 'login.html'),
   ],
-  entry: [
-    'babel-polyfill',
-    path.join(__dirname, root, 'app/app.js')
-  ],
+  entry: {
+    app: [
+      'babel-polyfill',
+      path.join(__dirname, root, 'app/app.js'),
+    ],
+    login: [
+      'babel-polyfill',
+      path.join(__dirname, root, 'login/login.js'),
+    ],
+  },
   output: root,
   blankTemplates: path.join(__dirname, 'generator', 'component/**/*.**'),
   dest: path.join(__dirname, 'dist')
@@ -48,7 +55,8 @@ let paths = {
 // use webpack.config.js to build modules
 gulp.task('webpack', ['clean'], (cb) => {
   const config = require('./webpack.dist.config');
-  config.entry.app = paths.entry;
+  config.entry.app = paths.entry.app;
+  config.entry.login = paths.entry.login;
 
   webpack(config, (err, stats) => {
     if(err)  {
@@ -72,7 +80,14 @@ gulp.task('serve', () => {
     // it responsible for all this webpack magic
     'webpack-hot-middleware/client?reload=true',
     // application entry point
-  ].concat(paths.entry);
+  ].concat(paths.entry.app);
+
+  config.entry.login = [
+    // this modules required to make HRM working
+    // it responsible for all this webpack magic
+    'webpack-hot-middleware/client?reload=true',
+    // application entry point
+  ].concat(paths.entry.login);
 
   var compiler = webpack(config);
 
