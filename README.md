@@ -169,3 +169,79 @@ enjoy — **AngularClass**
 ##[AngularClass](https://angularclass.com)
 > Learn AngularJS, Angular 2, and Modern Web Development from the best.
 > Looking for corporate Angular training, want to host us, or Angular consulting? scott@angularclass.com
+
+
+# Nginx config
+
+## dev config
+watch gulp server
+
+```conf
+server {
+  listen       8088;
+
+  location / {
+    # change this localhost for gulp server ip
+    proxy_pass http://localhost:3000/;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+
+  location = / {
+    # gulp webpack output dist path
+    rewrite ^(.*)$ http://$http_host/app/ break;
+  }
+
+  location /app/ {
+    # change this localhost for gulp server ip
+    proxy_pass http://localhost:3000/index.html;
+  }
+
+  location /login/ {
+    # change this localhost for gulp server ip
+    proxy_pass http://localhost:3000/login.html;
+  }
+}
+```
+
+## product config
+
+direct host gulp webpack output dist
+
+```conf
+
+server {
+  listen       8088;
+
+  location / {
+    # gulp webpack output dist path
+    alias /pathto/dist/;
+  }
+
+  location = / {
+    # gulp webpack output dist path
+    rewrite ^(.*)$ http://$http_host/app/ break;
+  }
+
+  location /app/ {
+      # gulp webpack output dist path
+      root /pathto/dist/;
+      index index.html;
+      try_files $uri $uri/ $uri.html /index.html =404;
+  }
+
+  location /login/ {
+      # gulp webpack output dist path
+      root /pathto/dist/;
+      index login.html;
+      try_files $uri $uri/ $uri.html /login.html =404;
+  }
+}
+```
+
+---
